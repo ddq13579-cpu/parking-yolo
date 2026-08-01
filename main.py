@@ -234,7 +234,7 @@ while True:
         if snapshot_needed:
             cv2.imwrite(SNAPSHOT_PATH, draw_frame)
             ts = int(time.time())
-            image_url = f"https://dongyulong.cn/parking/parking_snapshot.jpg?t={ts}"
+            image_url = f"http://parking.dongyulong.cn:25852/parking/parking_snapshot.jpg?t={ts}"
 
         for item in changed_msgs:
             if item["slot_id"] not in PUSH_SLOTS:
