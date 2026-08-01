@@ -33,11 +33,11 @@ PUSH_SLOTS = {"4", "5"}   # 只对这些车位推送
 DETECT_CLASSES = None
 
 # 抽帧间隔（秒）
-FRAME_INTERVAL = 4
+FRAME_INTERVAL = 1
 
 # 状态机阈值
-EMPTY_CONFIRM = 10   # 连续空
-OCCUPY_CONFIRM = 10  # 连续占用
+EMPTY_CONFIRM = 15   # 连续空
+OCCUPY_CONFIRM = 15  # 连续占用
 # =====================
 # 参数配置（昼夜判断）
 # =====================

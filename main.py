@@ -64,7 +64,7 @@ def read_latest_frame(cap, max_reads=10):
 # =====================
 # 工具函数：绘制车位 ROI
 # =====================
-def draw_parking_rois(image):
+#def draw_parking_rois(image):
     """在结果图上标出车位 ROI，便于核对检测框是否命中。"""
     for slot_id, slot in PARKING_SLOTS.items():
         points = np.array(slot["polygon"], dtype=np.int32).reshape((-1, 1, 2))
@@ -221,7 +221,7 @@ while True:
                 s["state"] = "empty"
                 changed_msgs.append({
                     "slot_id": slot_id,
-                    "msg": f"{slot['name']} 车位空出"
+                    "msg": f"车位空出来了！！！{slot['name']} "
                 })
                 snapshot_needed = True
 
