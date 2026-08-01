@@ -62,6 +62,29 @@ def read_latest_frame(cap, max_reads=10):
 
 
 # =====================
+# 工具函数：绘制车位 ROI
+# =====================
+def draw_parking_rois(image):
+    """在结果图上标出车位 ROI，便于核对检测框是否命中。"""
+    for slot_id, slot in PARKING_SLOTS.items():
+        points = np.array(slot["polygon"], dtype=np.int32).reshape((-1, 1, 2))
+        cv2.polylines(image, [points], isClosed=True, color=(0, 0, 255), thickness=2)
+
+        # OpenCV 默认字体不支持中文，因此使用车位编号作为图上标识。
+        label_x, label_y = slot["polygon"][0]
+        cv2.putText(
+            image,
+            f"ROI {slot_id}",
+            (label_x, max(16, label_y - 6)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.45,
+            (0, 0, 255),
+            1,
+            cv2.LINE_AA,
+        )
+
+
+# =====================
 # 初始化
 # =====================
 model = YOLO("yolo11m.pt")
@@ -103,6 +126,8 @@ while True:
 
     infer_frame = frame.copy()
     draw_frame = frame.copy()
+    draw_parking_rois(draw_frame)
+
     # -------- 昼夜判断 --------
     gray = cv2.cvtColor(infer_frame, cv2.COLOR_BGR2GRAY)
     brightness = gray.mean()
