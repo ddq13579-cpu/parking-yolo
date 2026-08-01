@@ -1,0 +1,24 @@
+services:
+  parking:
+    build: .
+    container_name: parking-monitor
+    restart: unless-stopped
+    env_file:
+      - ${ENV_FILE:-.env}
+    volumes:
+      - snapshots:/snapshots
+    init: true
+
+  snapshot-web:
+    build: ./nginx
+    container_name: parking-snapshot-web
+    restart: unless-stopped
+    ports:
+      - "${SNAPSHOT_HTTP_PORT:-25852}:80"
+    volumes:
+      - snapshots:/usr/share/nginx/html/parking:ro
+    depends_on:
+      - parking
+
+volumes:
+  snapshots:
