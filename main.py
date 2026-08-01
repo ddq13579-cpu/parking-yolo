@@ -62,7 +62,7 @@ def read_latest_frame(cap, max_reads=10):
 
 
 # =====================
-# 工具函数：绘制车位 ROI
+# 工具函数：绘制车位 ROI 测试用
 # =====================
 #def draw_parking_rois(image):
     """在结果图上标出车位 ROI，便于核对检测框是否命中。"""
@@ -126,7 +126,8 @@ while True:
 
     infer_frame = frame.copy()
     draw_frame = frame.copy()
-    draw_parking_rois(draw_frame)
+#画roi检测框，测试用！！
+    #draw_parking_rois(draw_frame)
 
     # -------- 昼夜判断 --------
     gray = cv2.cvtColor(infer_frame, cv2.COLOR_BGR2GRAY)
