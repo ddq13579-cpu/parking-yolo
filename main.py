@@ -40,7 +40,7 @@ def bark_push(msg: str, title: str = "停车位提醒", image_url=None):
 
 
 # =====================
-# 工具函数：读取最新帧（并裁剪下半部分）
+# 工具函数：读取最新原始帧
 # =====================
 def read_latest_frame(cap, max_reads=10):
     frame = None
@@ -52,11 +52,6 @@ def read_latest_frame(cap, max_reads=10):
 
     if frame is None:
         return None
-
-    h, w = frame.shape[:2]
-
-    # 只取下半部分
-    frame = frame[h // 2 : h, :]
 
     return frame
 
@@ -108,9 +103,9 @@ if not cap.isOpened():
 last_process_time = 0
 
 while True:
-    frame = read_latest_frame(cap, max_reads=10)
+    full_frame = read_latest_frame(cap, max_reads=10)
 
-    if frame is None:
+    if full_frame is None:
         print("[WARN] RTSP read failed, reconnecting...", flush=True)
         cap.release()
         time.sleep(2)
@@ -124,10 +119,12 @@ while True:
 
     last_process_time = now
 
+    # 车位识别和状态判断仍只使用原图的下半部分。
+    crop_start_y = full_frame.shape[0] // 2
+    frame = full_frame[crop_start_y:, :]
     infer_frame = frame.copy()
-    draw_frame = frame.copy()
 #画roi检测框，测试用！！
-    #draw_parking_rois(draw_frame)
+    #draw_parking_rois(frame)
 
     # -------- 昼夜判断 --------
     gray = cv2.cvtColor(infer_frame, cv2.COLOR_BGR2GRAY)
@@ -156,14 +153,6 @@ while True:
         sum(len(r.boxes) for r in results if r.boxes is not None),
         flush=True
     )
-
-    # -------- 画检测框 --------
-    for r in results:
-        if r.boxes is None:
-            continue
-        for box in r.boxes:
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-            cv2.rectangle(draw_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
     changed_msgs = []
     snapshot_needed = False
@@ -232,7 +221,22 @@ while True:
     if changed_msgs:
         image_url = None
         if snapshot_needed:
-            cv2.imwrite(SNAPSHOT_PATH, draw_frame)
+            # 推送完整原始画面；检测框坐标来自下半部分，需加回裁剪偏移。
+            snapshot_frame = full_frame.copy()
+            for r in results:
+                if r.boxes is None:
+                    continue
+                for box in r.boxes:
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    cv2.rectangle(
+                        snapshot_frame,
+                        (x1, y1 + crop_start_y),
+                        (x2, y2 + crop_start_y),
+                        (0, 255, 0),
+                        2,
+                    )
+
+            cv2.imwrite(SNAPSHOT_PATH, snapshot_frame)
             ts = int(time.time())
             image_url = f"https://parking.dongyulong.cn:9308/parking/parking_snapshot.jpg?t={ts}"
 
